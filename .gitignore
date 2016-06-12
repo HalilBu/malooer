@@ -1,7 +1,11 @@
 # OSX files
 .DS_Store
 
+# Gradle files
 .gradle
+.m2
+
+# Build output directories and files
 build/
 
 # Ignore Gradle GUI config
@@ -12,6 +16,20 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
+
+# IntelliJ specific files/directories
+out
+.idea
+*.ipr
+*.iws
+*.iml
+
+# Eclipse specific files/directories
+.classpath
+.project
+.settings
+.metadata
+bin/
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
