@@ -2,7 +2,9 @@ import org.apache.commons.cli.*;
 
 import javax.mail.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,6 +35,11 @@ public class Main {
         try {
             cl = getCommandline(args);
         } catch (ParseException e) {
+            hFormatter.printHelp(appName, getOptions());
+            return;
+        }
+
+        if (!validateCmdLine(cl)) {
             hFormatter.printHelp(appName, getOptions());
             return;
         }
@@ -72,6 +79,21 @@ public class Main {
             System.out.println("No such provider");
             return;
         }
+    }
+
+    private static boolean validateCmdLine(CommandLine cl) {
+        List<Object> inputList = new ArrayList<Object>();
+        inputList.add(cl.getOptionValue("port"));
+        inputList.add(cl.getOptionValue("host"));
+        inputList.add(cl.getOptionValue("user"));
+        inputList.add(cl.getOptionValue("pwd"));
+
+        for (Object obj : inputList) {
+            if (obj == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static CommandLine getCommandline(String[] args) throws ParseException {
