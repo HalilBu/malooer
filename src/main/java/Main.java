@@ -1,10 +1,12 @@
 import org.apache.commons.cli.*;
 
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -35,25 +37,40 @@ public class Main {
             return;
         }
 
-        Integer port = Integer.valueOf(cl.getOptionValue("port"));
-        String host = cl.getOptionValue("host");
-        String user = cl.getOptionValue("user");
-        String pwd = cl.getOptionValue("pwd");
+        final Integer port = Integer.valueOf(cl.getOptionValue("port"));
+        final String host = cl.getOptionValue("host");
+        final String user = cl.getOptionValue("user");
+        final String pwd = cl.getOptionValue("pwd");
+
+
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+
+        Session session = Session.getInstance(props);
 
         try {
-            Properties props = new Properties();
-            props.put("mail.smtp.auth", "true");
+            final Transport transport = session.getTransport("smtp");
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    Date date = new Date();
+                    Timestamp timestamp = new Timestamp(date.getTime());
+                    try {
+                        transport.connect(host, port, user, pwd);
+                        transport.close();
+                        System.out.println(timestamp + ": [OK] Connection established - " + host);
+                    } catch (AuthenticationFailedException e) {
+                        System.out.println(timestamp + ": [FAIL] Authentication failed");
+                    } catch (MessagingException e) {
+                        System.out.println(timestamp + ": [FAIL] Unable to connect to server");
+                    }
+                }
+            };
 
-            Session session = Session.getInstance(props);
-
-            Transport transport = session.getTransport("smtp");
-            transport.connect(host, port, user, pwd);
-            transport.close();
-            System.out.println("Connection established [" + host + "]");
-        } catch (AuthenticationFailedException e) {
-            System.out.println("Authentication failed");
-        } catch (MessagingException e) {
-            System.out.println("Unable to connect to server");
+            ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+            service.scheduleAtFixedRate(runnable, 0, 5, TimeUnit.MINUTES);
+        } catch (NoSuchProviderException e) {
+            System.out.println("No such provider");
+            return;
         }
     }
 
