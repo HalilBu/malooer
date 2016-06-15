@@ -21,6 +21,9 @@ public class Main {
      * -user <USER>
      * -pwd <PASSWORD>
      *
+     * optional parameters:
+     * -o <EXECUTE_ONCE>
+     *
      * @param args
      */
     public static void main(String[] args) {
@@ -48,6 +51,7 @@ public class Main {
         final String host = cl.getOptionValue("host");
         final String user = cl.getOptionValue("user");
         final String pwd = cl.getOptionValue("pwd");
+        boolean onlyOnce = cl.hasOption("o");
 
 
         Properties props = new Properties();
@@ -74,7 +78,13 @@ public class Main {
             };
 
             ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-            service.scheduleAtFixedRate(runnable, 0, 5, TimeUnit.MINUTES);
+
+            if(onlyOnce){
+                service.execute(runnable);
+                service.shutdown();
+            }else{
+                service.scheduleAtFixedRate(runnable, 0, 5, TimeUnit.MINUTES);
+            }
         } catch (NoSuchProviderException e) {
             System.out.println("No such provider");
             return;
@@ -110,11 +120,13 @@ public class Main {
         Option hostOption = new Option("host", true, "the host");
         Option userOption = new Option("user", true, "the user");
         Option passOption = new Option("pwd", true, "the password");
+        Option executeOnceOption = new Option("o", false, "establish connection only once");
 
         options.addOption(portOption);
         options.addOption(hostOption);
         options.addOption(userOption);
         options.addOption(passOption);
+        options.addOption(executeOnceOption);
 
         return options;
     }
