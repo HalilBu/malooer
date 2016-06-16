@@ -22,6 +22,7 @@ public class Main {
      * -pwd <PASSWORD>
      *
      * optional parameters:
+     * -i <INTERVAL>
      * -o <EXECUTE_ONCE>
      *
      * @param args
@@ -53,6 +54,15 @@ public class Main {
         final String pwd = cl.getOptionValue("pwd");
         boolean onlyOnce = cl.hasOption("o");
 
+        Integer interval;
+        try {
+            interval = getInterval(cl);
+        } catch (Exception e) {
+            hFormatter.printHelp(appName, getOptions());
+            return;
+        }
+        interval = interval != null ? interval : 300;
+
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -83,11 +93,21 @@ public class Main {
                 service.execute(runnable);
                 service.shutdown();
             }else{
-                service.scheduleAtFixedRate(runnable, 0, 5, TimeUnit.MINUTES);
+                service.scheduleAtFixedRate(runnable, 0, interval, TimeUnit.SECONDS);
             }
         } catch (NoSuchProviderException e) {
             System.out.println("No such provider");
             return;
+        }
+    }
+
+    private static Integer getInterval(CommandLine cl) throws Exception {
+        String interval = cl.getOptionValue("i");
+
+        if (interval != null) {
+            return Integer.valueOf(interval);
+        } else {
+            return null;
         }
     }
 
@@ -120,12 +140,14 @@ public class Main {
         Option hostOption = new Option("host", true, "the host");
         Option userOption = new Option("user", true, "the user");
         Option passOption = new Option("pwd", true, "the password");
+        Option intervalOption = new Option("i", true, "interval between connections");
         Option executeOnceOption = new Option("o", false, "establish connection only once");
 
         options.addOption(portOption);
         options.addOption(hostOption);
         options.addOption(userOption);
         options.addOption(passOption);
+        options.addOption(intervalOption);
         options.addOption(executeOnceOption);
 
         return options;
