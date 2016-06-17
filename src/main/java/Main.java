@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 
     private static String appName = "malooer";
+    public static final int DEFAULT_INTERVAL = 300;
 
     /**
      * Required parameters:
@@ -60,7 +61,7 @@ public class Main {
             printHelp();
             return;
         }
-        interval = interval != null ? interval : 300;
+        interval = interval != null ? interval : DEFAULT_INTERVAL;
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -107,7 +108,7 @@ public class Main {
             service.execute(runnable);
             service.shutdown();
         } else {
-            service.scheduleAtFixedRate(runnable, 0, interval, TimeUnit.SECONDS);
+            service.scheduleAtFixedRate(runnable,  0, interval, TimeUnit.SECONDS);
         }
     }
 
