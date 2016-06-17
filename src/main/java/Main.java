@@ -89,10 +89,10 @@ public class Main {
 
             ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
-            if(onlyOnce){
+            if (onlyOnce) {
                 service.execute(runnable);
                 service.shutdown();
-            }else{
+            } else {
                 service.scheduleAtFixedRate(runnable, 0, interval, TimeUnit.SECONDS);
             }
         } catch (NoSuchProviderException e) {
