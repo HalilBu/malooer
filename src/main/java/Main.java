@@ -28,23 +28,22 @@ public class Main {
      * @param args
      */
     public static void main(String[] args) {
-        HelpFormatter hFormatter = new HelpFormatter();
         CommandLine cl;
 
         if (args.length < 1) {
-            hFormatter.printHelp(appName, getOptions());
+            printHelp();
             return;
         }
 
         try {
             cl = getCommandline(args);
         } catch (ParseException e) {
-            hFormatter.printHelp(appName, getOptions());
+            printHelp();
             return;
         }
 
         if (!validateCmdLine(cl)) {
-            hFormatter.printHelp(appName, getOptions());
+            printHelp();
             return;
         }
 
@@ -58,11 +57,10 @@ public class Main {
         try {
             interval = getInterval(cl);
         } catch (Exception e) {
-            hFormatter.printHelp(appName, getOptions());
+            printHelp();
             return;
         }
         interval = interval != null ? interval : 300;
-
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -71,33 +69,45 @@ public class Main {
 
         try {
             final Transport transport = session.getTransport("smtp");
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    Date date = new Date();
-                    Timestamp timestamp = new Timestamp(date.getTime());
-                    try {
-                        transport.connect(host, port, user, pwd);
-                        transport.close();
-                        System.out.println(timestamp + ": [OK] Connection established - " + host);
-                    } catch (AuthenticationFailedException e) {
-                        System.out.println(timestamp + ": [FAIL] Authentication failed");
-                    } catch (MessagingException e) {
-                        System.out.println(timestamp + ": [FAIL] Unable to connect to server");
-                    }
-                }
-            };
-
-            ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-
-            if (onlyOnce) {
-                service.execute(runnable);
-                service.shutdown();
-            } else {
-                service.scheduleAtFixedRate(runnable, 0, interval, TimeUnit.SECONDS);
-            }
+            Runnable runnable = getRunnable(transport, host, port, user, pwd);
+            startExecutor(runnable, onlyOnce, interval);
         } catch (NoSuchProviderException e) {
             System.out.println("No such provider");
             return;
+        }
+    }
+
+    private static void printHelp() {
+        HelpFormatter hFormatter = new HelpFormatter();
+        hFormatter.printHelp(appName, getOptions());
+    }
+
+    private static Runnable getRunnable(final Transport transport, final String host, final Integer port, final String user, final String pwd) {
+        return new Runnable() {
+            public void run() {
+                Date date = new Date();
+                Timestamp timestamp = new Timestamp(date.getTime());
+                try {
+                    transport.connect(host, port, user, pwd);
+                    transport.close();
+                    System.out.println(timestamp + ": [OK] Connection established - " + host);
+                } catch (AuthenticationFailedException e) {
+                    System.out.println(timestamp + ": [FAIL] Authentication failed");
+                } catch (MessagingException e) {
+                    System.out.println(timestamp + ": [FAIL] Unable to connect to server");
+                }
+            }
+        };
+    }
+
+    private static void startExecutor(Runnable runnable, boolean onlyOnce, Integer interval) {
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+
+        if (onlyOnce) {
+            service.execute(runnable);
+            service.shutdown();
+        } else {
+            service.scheduleAtFixedRate(runnable, 0, interval, TimeUnit.SECONDS);
         }
     }
 
