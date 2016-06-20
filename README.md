@@ -5,7 +5,7 @@ Malooer is a command-line tool for logging the connectivity state of a mail serv
 ### Usage:
 If you want to log the status to a file, then use the following command:
 ```
-java -jar malooer-<v>.jar -host <HOST> -port <PORT> -user <USER> -pwd <PASSWORD> >> malooer.log
+java -jar malooer-1.0.jar -host <HOST> -port <PORT> -user <USER> -pwd <PASSWORD> >> malooer.log
 ```
 This will start Malooer and log the output to _**malooer.log**_.
 
@@ -13,7 +13,7 @@ The default interval for checking the connection to the server is 5 minutes. To 
 
 The following command including the **-o** parameter establishes a connection to the server only once and prints the result:
 ```
-java -jar malooer-<v>.jar -host <HOST> -port <PORT> -user <USER> -pwd <PASSWORD> -o
+java -jar malooer-1.0.jar -host <HOST> -port <PORT> -user <USER> -pwd <PASSWORD> -o
 ```
 
 ## [License](LICENSE)
